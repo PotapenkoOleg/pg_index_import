@@ -1,0 +1,5 @@
+/target
+/.idea/.gitignore
+/.idea/modules.xml
+/.idea/pg_index_import.iml
+/.idea/vcs.xml
