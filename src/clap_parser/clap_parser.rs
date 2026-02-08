@@ -1,5 +1,4 @@
-use clap::{Args, Parser, Subcommand};
-use std::process::Output;
+use clap::{Args, Parser};
 
 #[derive(Parser, Debug)]
 #[command(
@@ -47,7 +46,12 @@ pub struct Cli {
 #[derive(Args, Debug)]
 #[group(multiple = false)]
 pub struct ExclusiveOptions {
-    #[arg(long, short, help = "Export indexes from SQL Server to files", default_value = "true")]
+    #[arg(
+        long,
+        short,
+        help = "Export indexes from SQL Server to files",
+        default_value = "true"
+    )]
     pub export: Option<bool>,
 
     #[arg(long, short, help = "Import indexes from files to Postgres")]

@@ -43,10 +43,10 @@ async fn main() {
     print_separator();
     // region Processing
     match (cli.exclusive_options.export, cli.exclusive_options.import) {
-        (Some(a), None) => {
+        (Some(_), None) => {
             export_indexes(settings, config).await;
         }
-        (None, Some(b)) => {
+        (None, Some(_)) => {
             import_indexes().await;
         }
         _ => unreachable!(),
