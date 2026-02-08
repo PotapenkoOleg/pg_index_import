@@ -4,20 +4,24 @@ use std::fmt;
 pub struct Settings {
     source_schema_name: String,
     source_table_name: String,
+    output_dir: Option<String>,
 }
 
 impl Settings {
-    pub fn from_args(args: &Cli) -> Self {
-        let source_schema_name = args.source_schema.clone();
+    pub fn from_args(cli: &Cli) -> Self {
+        let source_schema_name = cli.source_schema.clone();
 
-        let mut source_table_name = args.source_table.clone();
+        let mut source_table_name = cli.source_table.clone();
         if source_table_name.eq("*") {
             source_table_name = "*".to_string();
         }
 
+        let output_dir = cli.output_dir.clone();
+
         Settings {
             source_schema_name,
             source_table_name,
+            output_dir,
         }
     }
 
@@ -29,12 +33,21 @@ impl Settings {
     pub fn get_source_table_name_as_ref(&self) -> &String {
         &self.source_table_name
     }
+
+    pub fn get_output_dir_as_ref(&self) -> &Option<String> {
+        &self.output_dir
+    }
 }
 
 impl fmt::Display for Settings {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "Source schema name: <{}>", self.source_schema_name)?;
         writeln!(f, "Source table name: <{}>", self.source_table_name)?;
+        writeln!(
+            f,
+            "Output directory: <{}>",
+            self.output_dir.as_ref().unwrap()
+        )?;
         Ok(())
     }
 }
