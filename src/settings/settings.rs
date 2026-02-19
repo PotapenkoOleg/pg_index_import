@@ -5,6 +5,9 @@ pub struct Settings {
     source_schema_name: String,
     source_table_name: String,
     output_dir: Option<String>,
+    input_dir: Option<String>,
+    threads: u32,
+    timeout_in_hours: u64,
 }
 
 impl Settings {
@@ -18,10 +21,17 @@ impl Settings {
 
         let output_dir = cli.output_dir.clone();
 
+        let input_dir = cli.input_dir.clone();
+        let threads = cli.threads;
+        let timeout_in_hours = cli.timeout_in_hours;
+
         Settings {
             source_schema_name,
             source_table_name,
             output_dir,
+            input_dir,
+            threads,
+            timeout_in_hours,
         }
     }
 
@@ -37,6 +47,18 @@ impl Settings {
     pub fn get_output_dir_as_ref(&self) -> &Option<String> {
         &self.output_dir
     }
+
+    pub fn get_input_dir_as_ref(&self) -> &Option<String> {
+        &self.input_dir
+    }
+
+    pub fn get_threads(&self) -> u32 {
+        self.threads
+    }
+
+    pub fn get_timeout(&self) -> u64 {
+        self.timeout_in_hours
+    }
 }
 
 impl fmt::Display for Settings {
@@ -48,6 +70,9 @@ impl fmt::Display for Settings {
             "Output directory: <{}>",
             self.output_dir.as_ref().unwrap()
         )?;
+        writeln!(f, "Input directory: <{}>", self.input_dir.as_ref().unwrap())?;
+        writeln!(f, "Threads: <{}>", self.threads)?;
+        writeln!(f, "Timeout: <{}>", self.timeout_in_hours)?;
         Ok(())
     }
 }
