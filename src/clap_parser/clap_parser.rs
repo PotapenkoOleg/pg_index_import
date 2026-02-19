@@ -1,5 +1,5 @@
-use clap::{Args, Parser, Subcommand};
-use std::process::Output;
+
+use clap::{Args, Parser, value_parser};
 
 #[derive(Parser, Debug)]
 #[command(
@@ -19,6 +19,7 @@ pub struct Cli {
     )]
     pub config_file: String,
 
+    // region Export
     #[arg(
         long,
         short = 's',
@@ -42,14 +43,48 @@ pub struct Cli {
         default_value = "OUTPUT"
     )]
     pub output_dir: Option<String>,
+    // endregion
+
+    // region Import
+    #[arg(
+        long,
+        short = 'I',
+        help = "Current directory sub directory for input files",
+        default_value = "INPUT"
+    )]
+    pub input_dir: Option<String>,
+
+    #[arg(
+        long,
+        short = 'r',
+        default_value = "2",
+        value_parser = value_parser!(u32).range(1..=10),
+        help = "Number of threads from 1 to 10"
+    )]
+    pub threads: u32,
+
+    #[arg(
+        long,
+        short = 'T',
+        default_value = "24",
+        value_parser = value_parser!(u64).range(1..=72),
+        help = "Command timeout in hours from 1 to 72"
+    )]
+    pub timeout_in_hours: u64,
+    // endregion
 }
 
 #[derive(Args, Debug)]
 #[group(multiple = false)]
 pub struct ExclusiveOptions {
-    #[arg(long, short, help = "Export indexes from SQL Server to files", default_value = "true")]
+    #[arg(long, short, help = "Export indexes from SQL Server to files")]
     pub export: Option<bool>,
 
-    #[arg(long, short, help = "Import indexes from files to Postgres")]
+    #[arg(
+        long,
+        short,
+        help = "Import indexes from files to Postgres",
+        default_value = "true"
+    )]
     pub import: Option<bool>,
 }

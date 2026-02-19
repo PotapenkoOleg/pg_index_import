@@ -93,9 +93,7 @@ impl<'a> ConfigProvider<'a> {
         let content = tokio::fs::read_to_string(self.config_file_name)
             .await
             .with_context(|| format!("Failed to read config file: {}", self.config_file_name))?;
-
         let config: Config = toml::from_str(&content)?;
-
         Ok(config)
     }
 }
