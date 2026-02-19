@@ -1,8 +1,8 @@
 pub const PRODUCT_NAME: &str = "PG_INDEX_IMPORT";
-pub const VERSION_MAJOR: i32 = 0;
-pub const VERSION_MINOR: i32 = 1;
+pub const VERSION_MAJOR: i32 = 1;
+pub const VERSION_MINOR: i32 = 0;
 pub const VERSION_PATCH: i32 = 0;
-pub const VERSION_ALIAS: &str = "Salt Lake City";
+pub const VERSION_ALIAS: &str = "Denver";
 pub const COPYRIGHT: &str = "Oleg Potapenko";
 pub const COPYRIGHT_YEARS: &str = "2026";
 pub const LICENSE: &str = "MIT";
