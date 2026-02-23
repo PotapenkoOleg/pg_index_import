@@ -6,6 +6,9 @@ use crate::version::{
 pub fn print_separator() {
     println!("{}", "*".repeat(80));
 }
+pub fn get_separator() -> String {
+    "*".repeat(80)
+}
 
 pub fn print_banner() {
     println!(
