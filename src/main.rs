@@ -1,6 +1,6 @@
 use crate::clap_parser::clap_parser::Cli;
 use crate::config_provider::{Config, ConfigProvider};
-use crate::helpers::{print_banner, print_separator};
+use crate::helpers::{get_separator, print_banner, print_separator};
 use crate::postgres_provider::postgres_provider::PostgresProvider;
 use crate::settings::settings::Settings;
 use crate::shared::file_utils::{
@@ -12,7 +12,9 @@ use colored::Colorize;
 use futures_util::future::join_all;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::{env, process};
+use tokio::fs;
 use tokio::task::JoinHandle;
 use tokio::time::Instant;
 
@@ -159,17 +161,21 @@ async fn import_indexes(settings: Arc<Settings>, config: Config) {
     print_separator();
     // region Indexes Import
     println!("Importing Indexes ...");
+    let import_counter = Arc::new(AtomicU32::new(0));
     let mut handles = Vec::new();
     let (tx, rx) = flume::unbounded();
     for _ in 0..settings.get_threads() {
         let rx = rx.clone();
         let postgres_pool = postgres_pool.clone();
+        let counter_clone = Arc::clone(&import_counter);
         let handle: JoinHandle<anyhow::Result<()>> = tokio::spawn(async move {
             while let Ok((file_name, index_query)) = rx.recv_async().await {
-                print_separator();
+                let mut output = String::new();
                 let now = Instant::now();
-                println!("Importing Index: <{}>", file_name);
-                println!("{}", index_query);
+                output.push_str(get_separator().as_str());
+                output.push_str("\n".to_string().as_str());
+                output.push_str(&format!("Importing Index: <{}>\n", file_name));
+                output.push_str(&format!("{}\n", index_query));
 
                 let postgres_connection = postgres_pool.get().await?;
                 // let postgres_client = postgres_connection.client();
@@ -179,15 +185,29 @@ async fn import_indexes(settings: Arc<Settings>, config: Config) {
 
                 match postgres_connection.execute(&index_query, &[]).await {
                     Ok(_) => {
-                        println!("{}", "Index imported successfully".green());
+                        fs::remove_file(file_name).await?;
+                        counter_clone.fetch_add(1, Ordering::SeqCst);
+                        output.push_str(&format!("{}", "Index imported successfully\n".green()));
+                        output.push_str(&format!(
+                            "TOTAl Imported indexes: {}\n",
+                            counter_clone.load(Ordering::SeqCst)
+                        ));
                     }
-                    Err(e) => {
-                        eprintln!("{}: {}", "Error importing index".red(), e.to_string().red());
+                    Err(_) => {
+                        eprintln!(
+                            "{}{}{}: {}",
+                            get_separator().as_str(),
+                            "\n",
+                            "Error importing index".red(),
+                            index_query
+                        );
+                        continue;
                     }
                 }
 
                 let elapsed = now.elapsed();
-                println!("Elapsed: {:.2?}", elapsed);
+                output.push_str(&format!("Elapsed: {:.2?}", elapsed));
+                println!("{}", output);
             }
             Ok(())
         });
@@ -212,5 +232,7 @@ async fn import_indexes(settings: Arc<Settings>, config: Config) {
 
     print_separator();
     println!("{}", "DONE Importing Indexes".green());
+    let final_count = import_counter.load(Ordering::SeqCst);
+    println!("TOTAl Imported Indexes: {}", final_count);
     //endregion
 }
